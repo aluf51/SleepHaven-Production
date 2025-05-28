@@ -1,0 +1,103 @@
+import React, { useContext, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AppContext } from "../contexts/AppContext";
+import { lightTheme, darkTheme } from "../utils/theme";
+import { pageVariants, pageTransition } from "../utils/animations";
+
+import DashboardPage from "./dashboard/DashboardPage";
+import SOSModeMain from "./sos/SOSModeMain";
+
+// Onboarding Components
+// import MargaretIntroduction from "./onboarding/MargaretIntroduction";
+// import DeepDiveQuestions from "./onboarding/DeepDiveQuestions";
+import SleepPlanPresentation from "./onboarding/SleepPlanPresentation"; // Uncommented
+import SleepPlanView from "./plan/SleepPlanView"; // Uncommented
+// import DailyView from "./tracking/DailyView";
+
+// Community Components
+// import CommunityHub from "./community/CommunityHub";
+// import SuccessStoriesFeed from "./community/SuccessStoriesFeed";
+// import SubmitStoryForm from "./community/SubmitStoryForm";
+// import SleepTwinsDashboard from "./community/SleepTwinsDashboard";
+// import WeeklyTips from "./community/WeeklyTips";
+// import TipsArchive from "./community/TipsArchive";
+// import FAQPage from "./community/FAQPage";
+
+// Advanced Feature Components
+// import AdvancedFeaturesHub from "./AdvancedFeaturesHub";
+// import GrowthDevelopmentPage from "./growth/GrowthDevelopmentPage";
+// import CaregiverWellnessPage from "./wellness/CaregiverWellnessPage";
+import VisualSleepPlannerPage from "./planner/VisualSleepPlannerPage"; // Uncommented
+// import EnvironmentAnalyzerPage from "./analyzer/EnvironmentAnalyzerPage";
+// import AdaptiveInsightsPage from "./adaptive/AdaptiveInsightsPage";
+
+// Consultant and Profile Components
+// import ParentAvatarEditor from "./profile/ParentAvatarEditor";
+
+const AppContainerInternal = () => {
+  const context = useContext(AppContext);
+  
+  const state = context ? context.state : {};
+  const dispatch = context ? context.dispatch : () => {};
+
+  const { currentView, userName, babyName, babyAgeMonths, isPremiumUser, avatar, margaretOnboardingComplete, margaretPlanAnswers, margaretSleepPlan, isDarkMode } = state;
+  
+  const currentTheme = (state && typeof state.isDarkMode !== 'undefined' && state.isDarkMode) ? darkTheme : lightTheme;
+
+  const [margaretOnboardingStep, setMargaretOnboardingStep] = useState("introduction");
+
+  const renderCurrentView = () => {
+    if (currentView === "sos") {
+      return <SOSModeMain />;
+    }
+    if (currentView === "sleepPlanPresentation") {
+      return <SleepPlanPresentation answers={margaretPlanAnswers} babyName={babyName} babyAgeMonths={babyAgeMonths} onStartPlan={() => dispatch({ type: "SET_VIEW", payload: "sleepPlanView" })} />;
+    }
+    if (currentView === "sleepPlanView") {
+      return <SleepPlanView />;
+    }
+    if (currentView === "visualSleepPlanner") {
+      return <VisualSleepPlannerPage />;
+    }
+    // Render DashboardPage if currentView is dashboard or undefined, or any other unhandled view
+    // This makes dashboard the default/fallback view.
+    if (currentView === "dashboard" || !currentView) {
+      return <DashboardPage />;
+    }
+    // Fallback for other views that might be set but not yet implemented for rendering
+    return <div style={{padding: "20px", color: currentTheme.textColor, backgroundColor: currentTheme.pageBackground, height: "100vh", display: "flex", alignItems: "center", justifyContent: "center"}}>This is a placeholder for view: {currentView}</div>;
+  };
+
+  return (
+      <div 
+        style={{
+          minHeight: "100vh",
+          backgroundColor: currentTheme.pageBackground,
+          color: currentTheme.textColor,
+          fontFamily: currentTheme.fontFamilyBody,
+          display: "flex",
+          flexDirection: "column"
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+              key={currentView + margaretOnboardingStep}
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+          >
+              {renderCurrentView()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+  );
+};
+
+const AppContainer = () => {
+  return <AppContainerInternal />;
+}
+
+export default AppContainer;
+
